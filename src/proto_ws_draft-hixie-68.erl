@@ -36,7 +36,7 @@
 -vsn("0.9-dev").
 
 %% API
--export([handshake/1, handshake_continue/4, handle_data/4, format_send/2]).
+-export([handshake/1, handshake_continue/3, handle_data/3, format_send/2]).
 
 -export([required_headers/0]).
 
@@ -70,13 +70,12 @@ handshake(#wstate{socket_mode = SocketMode, force_ssl = WsForceSsl, origin = Ori
 
 -spec handshake_continue(WsCallback::fun(),
                          Acc::term(),
-                         Data::binary(),
                          State::wstate()) ->
                                 {term(), 'websocket_close'} |
                                 {term(), 'websocket_close', binary()} |
                                 {term(), 'continue', wstate()}  |
                                 {term(), 'continue', binary(), wstate()}.
-handshake_continue(_CB, _Acc0, _Data, _State) ->
+handshake_continue(_CB, _Acc0, _State) ->
     erlang:error(should_not_happen).
 
 %% ----------------------------------------------------------------------------------------------------------
@@ -84,15 +83,13 @@ handshake_continue(_CB, _Acc0, _Data, _State) ->
 %% ----------------------------------------------------------------------------------------------------------
 -spec handle_data(WsCallback::fun(),
                   Acc::term(),
-                  Data::binary(),
                   State::wstate()) ->
                          {term(), 'websocket_close'} |
                          {term(), 'websocket_close', binary()} |
                          {term(), 'continue', wstate()}  |
                          {term(), 'continue', binary(), wstate()}.
-handle_data(CB, Acc0, Data,
-            #wstate{buffer = Buffer} = State) ->
-    case i_handle_data(<<Buffer/binary, Data/binary>>, <<>>, Acc0, CB) of
+handle_data(CB, Acc0, #wstate{buffer = Buffer} = State) ->
+    case i_handle_data(Buffer, <<>>, Acc0, CB) of
         {Acc, continue, Buffer2} ->
             {Acc, continue, State#wstate{buffer = Buffer2}};
         {Acc, websocket_close, SendData} ->

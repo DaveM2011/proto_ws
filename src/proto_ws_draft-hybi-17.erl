@@ -36,7 +36,7 @@
 -vsn("0.9-dev").
 
 %% API
--export([handshake/1, handshake_continue/4, handle_data/4, format_send/2]).
+-export([handshake/1, handshake_continue/3, handle_data/3, format_send/2]).
 
 -export([required_headers/0]).
 
@@ -48,7 +48,7 @@
 %% ============================ \/ API ======================================================================
 required_headers() ->
     [
-     {'Upgrade', "websocket"}, {'Connection', "Upgrade"}, {'Host', ignore},
+     {'Upgrade', ["websocket", "WebSocket"]}, {'Connection', "Upgrade"}, {'Host', ignore},
      {'Sec-Websocket-Key', ignore}, {'Sec-WebSocket-Version', "13"}
     ].
 
@@ -64,25 +64,23 @@ handshake(State) ->
 %% ----------------------------------------------------------------------------------------------------------
 -spec handshake_continue(WsCallback::fun(),
                          Acc::term(),
-                         Data::binary(),
                          State::wstate()) ->
                                 {term(), 'websocket_close'} |
                                 {term(), 'websocket_close', binary()} |
                                 {term(), 'continue', wstate()}  |
                                 {term(), 'continue', binary(), wstate()}.
-handshake_continue(WsCallback, Acc0, Data, State) ->
-    ?HYBI_COMMON:handshake_continue(WsCallback, Acc0, Data, State).
+handshake_continue(WsCallback, Acc0, State) ->
+    ?HYBI_COMMON:handshake_continue(WsCallback, Acc0, State).
 
 %% ----------------------------------------------------------------------------------------------------------
 %% Description: Callback to handle incomed data.
 %% ----------------------------------------------------------------------------------------------------------
 -spec handle_data(WsCallback::fun(),
                   Acc::term(),
-                  Data::binary(),
                   State::wstate()) ->
                          {term(), websocket_close} | {term(), websocket_close, binary()} | {term(), continue, wstate()}.
-handle_data(WsCallback, Acc0, Data, State) ->
-    ?HYBI_COMMON:handle_data(WsCallback, Acc0, Data, State).
+handle_data(WsCallback, Acc0, State) ->
+    ?HYBI_COMMON:handle_data(WsCallback, Acc0, State).
 
 %% ----------------------------------------------------------------------------------------------------------
 %% Description: Callback to format data before it is sent into the socket.
